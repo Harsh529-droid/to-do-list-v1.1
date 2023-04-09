@@ -20,21 +20,18 @@ const schema = { item : String};
 
 const Item = mongoose.model('Item', schema);
 
-const getData = async() => {
-  return await Item.find({});
-}
-
-getData().then( x => { 
- dbItems = x;
-});
-
-
 
 app.get("/", function(req, res) {
 
   const day = date.getDate();
-
-  console.log(dbItems);
+ 
+  const getData = async() => {
+    return await Item.find({});
+  }
+  
+  getData().then( function (x){ 
+   dbItems = x;
+  });
 
   res.render("list", {listTitle: 'today', newListItems: dbItems});
 
@@ -42,15 +39,19 @@ app.get("/", function(req, res) {
 
 app.post("/", function(req, res){
 
-  const item = req.body.newItem;
+  const nItem = req.body.newItem;
+  const temp = new Item({
+    item : nItem
+  });
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
-    res.redirect("/");
-  }
+  temp.save().then( () => {console.log('saved');});
+
+  res.redirect("/");
+});
+
+app.post("/delete", function(req, res){
+
+   console.log(req.body);
 });
 
 app.get("/work", function(req,res){
