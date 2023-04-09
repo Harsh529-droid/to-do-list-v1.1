@@ -14,24 +14,29 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 const items = ["Buy Food", "Cook Food", "Eat Food",'rigno'];
+var dbItems = [];
 
 const schema = { item : String};
 
 const Item = mongoose.model('Item', schema);
 
 const getData = async() => {
-     return await Item.find({});
+  return await Item.find({});
 }
 
-getData().then(x => { 
-  console.log(x); 
+getData().then( x => { 
+ dbItems = x;
 });
+
+
 
 app.get("/", function(req, res) {
 
   const day = date.getDate();
 
-  res.render("list", {listTitle: 'today', newListItems: items});
+  console.log(dbItems);
+
+  res.render("list", {listTitle: 'today', newListItems: dbItems});
 
 });
 
