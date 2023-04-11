@@ -18,7 +18,7 @@ const items = ["Buy Food", "Cook Food", "Eat Food",'rigno'];
 const schema = { item : String};
 const newSchema = {
    name : String,
-   arrOfObjects : schema
+   arrOfObjects : [schema]
 };
 
 const Item = mongoose.model('Item', schema);
@@ -34,25 +34,27 @@ app.get("/", function(req, res) {
 
 });
 
-// app.get("/:newListName", function (req,res) {
+app.get("/:newListName", function (req,res) {
       
-//     const ln = req.params.newListName ;
+    const ln = req.params.newListName ;
     
-//     Todo.findOne({name : ln}).then((foundList) => {
-//        if(!foundList){
-//          const newList = new Todo({
-//             name : ln,
-//             arrOfObjects = []
-//          }) 
+    Todo.findOne({name : ln}).then((foundList) => {
+       if(!foundList){
+         const newList = new Todo({
+            name : ln
+         }) 
+         newList.save().then(() => {console.log('new list saved');});
 
-//        }else{
-//            Todo.findOne({naem : ln}).then((x) =>{
-//            res.render("list", {listTitle: ln, newListItems: x.arrOfObjects});
-//            });
-//        }
-//     });
+         res.render("list", {listTitle : ln, newListItems : newList.arrOfObjects} )  
+       }else{
+          
+           Todo.findOne({name : ln}).then((x) =>{
+           res.render("list", {listTitle: x.name, newListItems: x.arrOfObjects});
+           });
+       }
+     });
       
-// });
+});
 
 app.post("/", function(req, res){
 
@@ -62,7 +64,6 @@ app.post("/", function(req, res){
 
   temp.save().then( () => {console.log('saved'); res.redirect("/"); });
 
-  
 });
 
 app.post("/delete", function(req, res){
