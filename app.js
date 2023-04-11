@@ -6,7 +6,7 @@ const date = require(__dirname + "/date.js");
 const mongoose = require('mongoose');
 
 const app = express();
-mongoose.connect('mongodb://127.0.0.1:27017/List');
+mongoose.connect('mongodb://127.0.0.1:27017/Todo');
 
 app.set('view engine', 'ejs');
 
@@ -14,44 +14,66 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 const items = ["Buy Food", "Cook Food", "Eat Food",'rigno'];
-var dbItems = [];
 
 const schema = { item : String};
+const newSchema = {
+   name : String,
+   arrOfObjects : schema
+};
 
 const Item = mongoose.model('Item', schema);
-
+const Todo = mongoose.model('Todo', newSchema);
 
 app.get("/", function(req, res) {
 
   const day = date.getDate();
  
-  const getData = async() => {
-    return await Item.find({});
-  }
-  
-  getData().then( function (x){ 
-   dbItems = x;
+  Item.find({}).then((x) =>{
+      res.render("list", {listTitle: 'today', newListItems: x});
   });
-
-  res.render("list", {listTitle: 'today', newListItems: dbItems});
 
 });
 
+// app.get("/:newListName", function (req,res) {
+      
+//     const ln = req.params.newListName ;
+    
+//     Todo.findOne({name : ln}).then((foundList) => {
+//        if(!foundList){
+//          const newList = new Todo({
+//             name : ln,
+//             arrOfObjects = []
+//          }) 
+
+//        }else{
+//            Todo.findOne({naem : ln}).then((x) =>{
+//            res.render("list", {listTitle: ln, newListItems: x.arrOfObjects});
+//            });
+//        }
+//     });
+      
+// });
+
 app.post("/", function(req, res){
 
-  const nItem = req.body.newItem;
-  const temp = new Item({
-    item : nItem
-  });
+    const temp = new Item({
+    item : req.body.newItem
+});
 
-  temp.save().then( () => {console.log('saved');});
+  temp.save().then( () => {console.log('saved'); res.redirect("/"); });
 
-  res.redirect("/");
+  
 });
 
 app.post("/delete", function(req, res){
 
-   console.log(req.body);
+   let id = (req.body.checkbox);
+  
+   Item.deleteOne({_id : id}).then( () => {
+     console.log('item deleted!');
+     res.redirect('/');
+   }); 
+  
 });
 
 app.get("/work", function(req,res){
