@@ -18,8 +18,8 @@ const items = ["Buy Food", "Cook Food", "Eat Food",'rigno'];
 const schema = { item : String};
 const newSchema = {
    name : String,
-   arrOfObjects : [schema]
-};
+   arrOfObjects : []
+}
 
 const Item = mongoose.model('Item', schema);
 const Todo = mongoose.model('Todo', newSchema);
@@ -39,7 +39,8 @@ app.get("/:newListName", function (req,res) {
     const ln = req.params.newListName ;
     
     Todo.findOne({name : ln}).then((foundList) => {
-       if(!foundList){
+       
+      if(!foundList){
          const newList = new Todo({
             name : ln
          }) 
@@ -57,13 +58,29 @@ app.get("/:newListName", function (req,res) {
 });
 
 app.post("/", function(req, res){
+    
+  const ln = req.body.list ;
 
-    const temp = new Item({
-    item : req.body.newItem
-});
+  const temp = new Item({
+  item : req.body.newItem
+  });
+  
+  if(ln === 'today'){
+     temp.save().then(() => {
+       res.redirect("/");
+     });
+  }else{
+     
+     Todo.findOne({name : ln}).then((x) => {
+        
+        x.arrOfObjects.push(temp);
+        console.log(x);
+        x.save();
+        res.redirect("/"+ln);
+     });
 
-  temp.save().then( () => {console.log('saved'); res.redirect("/"); });
-
+  }
+ 
 });
 
 app.post("/delete", function(req, res){
@@ -76,6 +93,7 @@ app.post("/delete", function(req, res){
    }); 
   
 });
+
 
 app.get("/work", function(req,res){
   res.render("list", {listTitle: "Work List", newListItems: workItems});
