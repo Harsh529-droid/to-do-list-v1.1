@@ -24,6 +24,24 @@ const newSchema = {
 const Item = mongoose.model('Item', schema);
 const Todo = mongoose.model('Todo', newSchema);
 
+const fn = (str) => {
+    let arr = [];
+    let s1 = "", s2 = "";
+    var i;
+    
+    for(i=0;i<str.length;i++){
+       if(str[i]=='/')break;
+       if(str[i] !== '/')s1 = s1 + str[i];
+    }
+    for(i=i+1;i<str.length;i++){
+      s2 += str[i];
+    }
+    arr.push(s1); arr.push(s2);
+    return arr;
+
+}
+/******************************************************************************* */
+
 app.get("/", function(req, res) {
 
   const day = date.getDate();
@@ -42,7 +60,8 @@ app.get("/:newListName", function (req,res) {
        
       if(!foundList){
          const newList = new Todo({
-            name : ln
+            name : ln,
+            arrOfObjects : []
          }) 
          newList.save().then(() => {console.log('new list saved');});
 
@@ -74,25 +93,62 @@ app.post("/", function(req, res){
      Todo.findOne({name : ln}).then((x) => {
         
         x.arrOfObjects.push(temp);
-        console.log(x);
-        x.save();
-        res.redirect("/"+ln);
-     });
-
-  }
+        x.save().then(() => {
+          res.redirect("/"+ln);
+        });
+      });
+    }
  
 });
 
 app.post("/delete", function(req, res){
 
    let id = (req.body.checkbox);
+   let arr = fn(id);
   
-   Item.deleteOne({_id : id}).then( () => {
-     console.log('item deleted!');
-     res.redirect('/');
-   }); 
+  if(arr[1] == "today"){
+       Item.deleteOne({_id : arr[0]}).then( () => {
+         console.log('item deleted!');
+         res.redirect('/');
+       });
+   }else{
+      
+      Todo.findOne({name : arr[1]}).then((curr) =>{
+          let x = (curr.arrOfObjects[0]._id);
+         
+             const ft = curr.arrOfObjects.filter((currElem) => {
+             return (currElem._id !== x ) ;
+          });
+          console.log(ft);
+          Todo.updateOne({arrOfObjects : ft}).then(() =>{
+            
+            res.redirect('/'+arr[1]);
+          });
+      });
+   }
+ });
+ 
+// app.post("/delete", function(req, res){
+
+//    let id = (req.body.checkbox);
+   
+//    if(ln === 'today'){
+//     temp.save().then(() => {
+//       res.redirect("/");
+//     });
+//    }else{
+    
+//     Todo.findOne({name : ln}).then((x) => {
+       
+//        x.arrOfObjects.push(temp);
+//        console.log(x);
+//        x.save();
+//        res.redirect("/"+ln);
+//     });
+
+//    }
   
-});
+// });
 
 
 app.get("/work", function(req,res){
