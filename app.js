@@ -114,42 +114,21 @@ app.post("/delete", function(req, res){
    }else{
       
       Todo.findOne({name : arr[1]}).then((curr) =>{
-          let x = (curr.arrOfObjects[0]._id);
+          let x = arr[0]; //id of that list item
          
              const ft = curr.arrOfObjects.filter((currElem) => {
-             return (currElem._id !== x ) ;
+             return (currElem._id.toString() !== x ) ;
           });
           console.log(ft);
-          Todo.updateOne({arrOfObjects : ft}).then(() =>{
-            
+
+          Todo.updateOne({name : arr[1]},{arrOfObjects : ft}).then((it) =>{
+            console.log(it.arrOfObjects);
             res.redirect('/'+arr[1]);
           });
       });
    }
  });
  
-// app.post("/delete", function(req, res){
-
-//    let id = (req.body.checkbox);
-   
-//    if(ln === 'today'){
-//     temp.save().then(() => {
-//       res.redirect("/");
-//     });
-//    }else{
-    
-//     Todo.findOne({name : ln}).then((x) => {
-       
-//        x.arrOfObjects.push(temp);
-//        console.log(x);
-//        x.save();
-//        res.redirect("/"+ln);
-//     });
-
-//    }
-  
-// });
-
 
 app.get("/work", function(req,res){
   res.render("list", {listTitle: "Work List", newListItems: workItems});
